@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes.products import router as products_router
@@ -13,14 +14,23 @@ from app.api.routes.webhook import router as webhook_router
 
 app = FastAPI(title="Merchant-to-Agent Commerce Gateway")
 
+frontend_url = os.getenv(
+    "FRONTEND_URL",
+    "http://localhost:3000",
+)
+
+allowed_origins = [
+    "http://localhost:3000",
+    frontend_url,
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 app.include_router(merchants_router)
 app.include_router(products_router)
