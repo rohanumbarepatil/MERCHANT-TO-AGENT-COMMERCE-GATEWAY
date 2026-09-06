@@ -107,14 +107,18 @@ def process_payment(
     # -----------------------------------------------------
 
     if transaction_status == "paid":
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Payment cannot be processed for "
-                "transaction status: paid"
-            ),
-        )
-
+    return {
+        "success": True,
+        "transaction": transaction,
+        "payment": {
+            "provider": "razorpay",
+            "order_id": request.razorpay_order_id,
+            "payment_id": request.razorpay_payment_id,
+            "status": "verified",
+        },
+        "message": "Payment already verified.",
+    }
+    
     # -----------------------------------------------------
     # 3. Only approved transactions can be paid
     # -----------------------------------------------------
