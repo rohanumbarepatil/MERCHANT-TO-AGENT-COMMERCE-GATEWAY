@@ -1,7 +1,7 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 const API_BASE = "http://127.0.0.1:8000";
@@ -68,7 +68,7 @@ type PaymentResponse = {
   message?: string;
 };
 
-export default function ApprovalPage() {
+function ApprovalContent() {
   const searchParams = useSearchParams();
   const transactionId = searchParams.get("transaction_id");
 
@@ -249,67 +249,68 @@ export default function ApprovalPage() {
           paymentData.order_id,
 
         handler: async function (razorpayResponse) {
-  try {
-    setActionLoading(true);
-    setError("");
+          try {
+            setActionLoading(true);
+            setError("");
 
-    const verifyResponse = await fetch(
-      `${API_BASE}/api/payments/verify`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+            const verifyResponse = await fetch(
+              `${API_BASE}/api/payments/verify`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  transaction_id: transactionId,
+                  razorpay_order_id:
+                    razorpayResponse.razorpay_order_id,
+                  razorpay_payment_id:
+                    razorpayResponse.razorpay_payment_id,
+                  razorpay_signature:
+                    razorpayResponse.razorpay_signature,
+                }),
+              }
+            );
+
+            const verifyData =
+              await verifyResponse.json();
+
+            if (!verifyResponse.ok) {
+              throw new Error(
+                verifyData.detail ||
+                  "Payment verification failed."
+              );
+            }
+
+            // Update transaction state from backend
+            setTransaction(
+              verifyData.transaction
+            );
+
+            // Show verified payment
+            setPayment({
+              ...verifyData,
+              payment: {
+                ...verifyData.payment,
+                payment_id:
+                  razorpayResponse.razorpay_payment_id,
+                order_id:
+                  razorpayResponse.razorpay_order_id,
+                signature:
+                  razorpayResponse.razorpay_signature,
+                status: "verified",
+              },
+            });
+          } catch (err) {
+            setError(
+              err instanceof Error
+                ? err.message
+                : "Payment verification failed."
+            );
+          } finally {
+            setActionLoading(false);
+          }
         },
-        body: JSON.stringify({
-          transaction_id: transactionId,
-          razorpay_order_id:
-            razorpayResponse.razorpay_order_id,
-          razorpay_payment_id:
-            razorpayResponse.razorpay_payment_id,
-          razorpay_signature:
-            razorpayResponse.razorpay_signature,
-        }),
-      }
-    );
-
-    const verifyData = await verifyResponse.json();
-
-    if (!verifyResponse.ok) {
-      throw new Error(
-        verifyData.detail ||
-          "Payment verification failed."
-      );
-    }
-
-    // Update transaction state from backend
-    setTransaction(
-      verifyData.transaction
-    );
-
-    // Show verified payment
-    setPayment({
-      ...verifyData,
-      payment: {
-        ...verifyData.payment,
-        payment_id:
-          razorpayResponse.razorpay_payment_id,
-        order_id:
-          razorpayResponse.razorpay_order_id,
-        signature:
-          razorpayResponse.razorpay_signature,
-        status: "verified",
-      },
-    });
-  } catch (err) {
-    setError(
-      err instanceof Error
-        ? err.message
-        : "Payment verification failed."
-    );
-  } finally {
-    setActionLoading(false);
-  }
-},
 
         prefill: {
           name: "Buildathon User",
@@ -825,5 +826,21 @@ export default function ApprovalPage() {
         </div>
       </main>
     </>
+  );
+}
+
+export default function ApprovalPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-[#f6f7f9]">
+          <p className="text-sm text-gray-500">
+            Loading approval...
+          </p>
+        </main>
+      }
+    >
+      <ApprovalContent />
+    </Suspense>
   );
 }
