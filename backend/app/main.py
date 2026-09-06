@@ -9,6 +9,7 @@ from app.api.routes.payments import router as payments_router
 from app.api.routes.approvals import router as approvals_router
 from app.api.routes.audit import router as audit_router
 from app.api.routes.agent import router as agent_router
+from app.api.routes.webhook import router as webhook_router
 
 app = FastAPI(title="Merchant-to-Agent Commerce Gateway")
 
@@ -30,6 +31,7 @@ app.include_router(payments_router)
 app.include_router(approvals_router)
 app.include_router(audit_router)
 app.include_router(agent_router)
+app.include_router(webhook_router)
 
 
 @app.get("/health")

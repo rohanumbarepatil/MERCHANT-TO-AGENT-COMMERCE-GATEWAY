@@ -33,7 +33,6 @@ def extract_price(message: str) -> float | None:
 
     return None
 
-
 def extract_product_query(message: str) -> str:
     text = message.lower()
 
@@ -52,7 +51,6 @@ def extract_product_query(message: str) -> str:
             return keyword
 
     return text.strip()
-
 
 def detect_intent(message: str) -> str:
     text = message.lower()

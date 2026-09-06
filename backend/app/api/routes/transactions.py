@@ -18,6 +18,29 @@ class TransactionRequest(BaseModel):
     merchant_id: str
     product_id: str
 
+@router.get("/{transaction_id}")
+def get_transaction(transaction_id: str) -> dict[str, Any]:
+    response = (
+        supabase
+        .table("transactions")
+        .select("*")
+        .eq("id", transaction_id)
+        .single()
+        .execute()
+    )
+
+    transaction = response.data
+
+    if not transaction:
+        raise HTTPException(
+            status_code=404,
+            detail="Transaction not found",
+        )
+
+    return {
+        "success": True,
+        "transaction": transaction,
+    }
 
 @router.post("/")
 def create_transaction(
