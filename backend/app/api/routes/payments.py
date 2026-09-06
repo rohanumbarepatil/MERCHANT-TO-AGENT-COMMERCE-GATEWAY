@@ -107,18 +107,14 @@ def process_payment(
     # -----------------------------------------------------
 
     if transaction_status == "paid":
-    return {
-        "success": True,
-        "transaction": transaction,
-        "payment": {
-            "provider": "razorpay",
-            "order_id": request.razorpay_order_id,
-            "payment_id": request.razorpay_payment_id,
-            "status": "verified",
-        },
-        "message": "Payment already verified.",
-    }
-    
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Payment cannot be processed for "
+                "transaction status: paid"
+            ),
+        )
+
     # -----------------------------------------------------
     # 3. Only approved transactions can be paid
     # -----------------------------------------------------
@@ -259,17 +255,21 @@ def verify_payment(
     transaction_status = transaction.get("status")
 
     # -----------------------------------------------------
-    # 2. Prevent duplicate verification
+    # 2. Handle already verified payment
     # -----------------------------------------------------
 
     if transaction_status == "paid":
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Payment has already been verified for "
-                "this transaction."
-            ),
-        )
+        return {
+            "success": True,
+            "transaction": transaction,
+            "payment": {
+                "provider": "razorpay",
+                "order_id": request.razorpay_order_id,
+                "payment_id": request.razorpay_payment_id,
+                "status": "verified",
+            },
+            "message": "Payment already verified.",
+        }
 
     # -----------------------------------------------------
     # 3. Transaction must be approved
