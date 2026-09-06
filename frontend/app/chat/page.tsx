@@ -54,7 +54,7 @@ export default function ChatPage() {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/agent/chat",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/agent/chat`,
         {
           method: "POST",
           headers: {

@@ -46,7 +46,7 @@ export default function Home() {
   const [currentTime, setCurrentTime] = useState("");
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/health")
+    fetch("${process.env.NEXT_PUBLIC_API_URL}/health")
       .then((response) => response.json())
       .then((data) => {
         setBackendStatus(data.status === "ok" ? "Operational" : data.status);
@@ -94,7 +94,7 @@ export default function Home() {
             </div>
 
             <a
-              href="http://127.0.0.1:8000/docs"
+              href="${process.env.NEXT_PUBLIC_API_URL}/docs"
               target="_blank"
               rel="noreferrer"
               className="rounded-lg border border-black/10 px-3 py-2 text-xs font-medium transition hover:bg-black hover:text-white"
